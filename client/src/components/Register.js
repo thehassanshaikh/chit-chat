@@ -1,16 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/register", {
+      const response = await fetch("https://chatbackend-xi.vercel.app/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -20,17 +22,14 @@ function Register() {
       });
 
       if (!response.ok) {
-        throw new Error("Registration failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
       }
 
-      // Store username in localStorage
       localStorage.setItem("username", username);
-
-      // Redirect to chat
-      window.location.href = "/chat";
+      navigate('/chat');
     } catch (err) {
-      setError("Registration failed. Please try again.");
-      console.error("Registration error:", err);
+      setError(err.message || "Registration failed. Please try again.");
     }
   };
 

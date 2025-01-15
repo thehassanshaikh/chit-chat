@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
+import { useNavigate } from 'react-router-dom';
 
-const SOCKET_URL = "http://localhost:5000";
+const SOCKET_URL = "https://chatbackend-xi.vercel.app";
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -9,19 +10,20 @@ function Chat() {
   const [loading, setLoading] = useState(true);
   const socketRef = useRef();
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Get username from localStorage
   const username = localStorage.getItem("username");
 
   useEffect(() => {
     if (!username) {
-      window.location.href = "/login";
+      navigate('/login');
       return;
     }
 
     const initializeSocket = () => {
       socketRef.current = io(SOCKET_URL, {
         withCredentials: true,
+        transports: ['websocket', 'polling']
       });
 
       socketRef.current.on("connect", () => {
@@ -31,27 +33,31 @@ function Chat() {
 
       socketRef.current.on("connect_error", (error) => {
         console.error("Socket connection error:", error);
+        setLoading(false);
       });
 
       socketRef.current.on("message", (message) => {
-        console.log("Received message:", message);
         setMessages((prev) => [...prev, message]);
       });
     };
 
     const fetchMessages = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/messages", {
+        const response = await fetch(`${SOCKET_URL}/api/messages`, {
           credentials: "include",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+          }
         });
         if (response.ok) {
           const data = await response.json();
-          console.log("Fetched messages:", data);
           setMessages(data);
         }
       } catch (err) {
         console.error("Error fetching messages:", err);
       }
+      setLoading(false);
     };
 
     initializeSocket();
@@ -59,11 +65,10 @@ function Chat() {
 
     return () => {
       if (socketRef.current) {
-        console.log("Disconnecting socket");
         socketRef.current.disconnect();
       }
     };
-  }, [username]);
+  }, [username, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

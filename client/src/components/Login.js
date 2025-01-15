@@ -1,42 +1,37 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      console.log("Attempting login for user:", username);
-      const response = await fetch("http://localhost:5000/api/login", {
+      const response = await fetch("https://chatbackend-xi.vercel.app/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
         credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
-      console.log("Login response status:", response.status);
-
       if (!response.ok) {
-        throw new Error("Login failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
       }
 
       const data = await response.json();
-      console.log("Login successful:", data);
-
-      // Store username in localStorage
       localStorage.setItem("username", username);
-
-      // Redirect to chat
-      window.location.href = "/chat";
+      navigate('/chat');
     } catch (err) {
-      console.error("Login error:", err);
-      setError("Login failed. Please check your credentials and try again.");
+      setError(err.message || "Login failed. Please check your credentials.");
     }
   };
 

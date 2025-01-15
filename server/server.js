@@ -11,7 +11,7 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://chitchat-dusky.vercel.app",
+ "https://your-frontend-domain.vercel.app",
 ];
 
 const io = socketIO(server, {
