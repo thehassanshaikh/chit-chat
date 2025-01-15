@@ -74,7 +74,7 @@ function Login() {
         </form>
         <div className="mt-4 text-center">
           <button
-            onClick={() => (window.location.href = "/register")}
+            onClick={() => navigate('/register')}
             className="text-blue-500 hover:text-blue-600"
           >
             Need an account? Register here

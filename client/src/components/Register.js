@@ -72,7 +72,7 @@ function Register() {
         </form>
         <div className="mt-4 text-center">
           <button
-            onClick={() => (window.location.href = "/login")}
+            onClick={() => (navigate('/login'))}
             className="text-blue-500 hover:text-blue-600"
           >
             Already have an account? Login here

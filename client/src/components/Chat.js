@@ -15,6 +15,10 @@ function Chat() {
   const username = localStorage.getItem("username");
 
   useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
     if (!username) {
       navigate('/login');
       return;
@@ -84,7 +88,7 @@ function Chat() {
 
   const handleLogout = () => {
     localStorage.removeItem("username");
-    window.location.href = "/login";
+    navigate('/login');
   };
 
   if (!username) {
