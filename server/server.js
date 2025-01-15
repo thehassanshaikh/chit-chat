@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const http = require("http");
 const socketIO = require("socket.io");
@@ -9,23 +8,32 @@ const bcrypt = require("bcrypt");
 
 const app = express();
 const server = http.createServer(app);
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://chitchat-dusky.vercel.app",
+];
+
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
-
-res.header("Access-Control-Allow-Credentials", "true");
-res.header("Access-Control-Allow-Origin", "http://localhost:3000");
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (allowedOrigins.includes(origin) || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -35,7 +43,7 @@ const users = [];
 const messages = [];
 
 // JWT secret (use environment variable in production)
-const JWT_SECRET = "your-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || "your-default-secret";
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -66,7 +74,7 @@ app.post("/api/register", async (req, res) => {
   users.push({ username, password: hashedPassword });
 
   const token = jwt.sign({ username }, JWT_SECRET);
-  res.cookie("jwt", token, { httpOnly: true });
+  res.cookie("jwt", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
   res.json({ message: "Registration successful" });
 });
 
@@ -79,7 +87,7 @@ app.post("/api/login", async (req, res) => {
   }
 
   const token = jwt.sign({ username }, JWT_SECRET);
-  res.cookie("jwt", token, { httpOnly: true });
+  res.cookie("jwt", token, { httpOnly: true, secure: process.env.NODE_ENV === "production" });
   res.json({ message: "Login successful" });
 });
 
